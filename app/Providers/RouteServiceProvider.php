@@ -70,4 +70,21 @@ class RouteServiceProvider extends ServiceProvider
              ->namespace($this->namespace)
              ->group(base_path('routes/api.php'));
     }
+
+    public function mapRoutes()
+    {
+        Route::group(['namespace' => "{$this->namespace}", 'midleware' => 'api'], function(Registrar $route){
+            foreach( $this->getRouteFiles() as $file ){
+                $namespace = basename($file, '.php');
+                $route::group(['namespace' => $namespace], function(Registrar $route) use ($namespace) {
+                    $this->app->make("App\\Http\\Routes\\$namespace")->map($route);
+                });
+            }
+        });
+    }
+
+    private function getRouteFiles()
+    {
+        return glob(app_path('Http//Routes') . '/*.php');
+    }
 }
